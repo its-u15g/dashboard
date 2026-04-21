@@ -24,6 +24,7 @@
         .text-gradient-blue { background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-image: linear-gradient(135deg, var(--team-main), var(--team-sub)); }
         .text-gradient-amber { background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-image: linear-gradient(135deg, #d97706, #fbbf24); }
         .text-gradient-rose { background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-image: linear-gradient(135deg, #be123c, #fb7185); }
+        .text-gradient-slate { background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-image: linear-gradient(135deg, #475569, #94a3b8); }
 
         /* セレクトボックスの矢印カスタマイズ */
         .select-wrapper { position: relative; }
@@ -41,6 +42,9 @@
             .btn-sync, .select-wrapper::after { display: none !important; }
             select#match-selector { appearance: none !important; -webkit-appearance: none !important; border: none !important; background: transparent !important; color: white !important; font-size: 1.25rem !important; padding: 0 !important; }
             .shadow-sm { box-shadow: none !important; border: 1px solid #cbd5e1 !important; }
+            /* 印刷時に表が途切れないようにする */
+            table { page-break-inside: auto; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
         }
     </style>
 </head>
@@ -81,7 +85,6 @@
     </div>
 
     <!-- メインダッシュボード -->
-    <!-- h-[calc...] の固定を外し、自然にスクロールするように変更 -->
     <main class="flex-grow w-full max-w-7xl mx-auto p-4 sm:p-5 relative flex flex-col">
         
         <!-- ローディングオーバーレイ -->
@@ -150,30 +153,39 @@
                 </div>
             </div>
 
-            <!-- 下段：詳細アナリティクス -->
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-5">
+            <!-- 🆕 下段：詳細アナリティクス (5カラム構成に変更) -->
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-5">
                 
-                <!-- シュート種類別内訳 -->
-                <div class="col-span-1 lg:col-span-3 bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 flex flex-col relative overflow-hidden">
+                <!-- シュート種類別内訳 (7m追加で6分割) -->
+                <div class="col-span-1 lg:col-span-3 bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6 flex flex-col relative overflow-hidden">
                     <h3 class="text-sm sm:text-base font-black text-slate-700 mb-4 flex items-center"><i class="fas fa-chart-bar text-[#0077B6] mr-2"></i>シュート種類別の決定率</h3>
                     
-                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4 flex-grow" id="shot-types-container">
+                    <div class="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3 flex-grow" id="shot-types-container">
                         <!-- JSで生成 -->
                     </div>
                 </div>
 
-                <!-- チーム総ミス数 -->
-                <div class="col-span-1 lg:col-span-1 bg-gradient-to-br from-amber-50 to-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col justify-center items-center relative overflow-hidden group hover:border-[#F59E0B] transition-all">
+                <!-- 自チーム総ミス数 -->
+                <div class="col-span-1 lg:col-span-1 bg-gradient-to-br from-amber-50 to-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 flex flex-col justify-center items-center relative overflow-hidden group hover:border-[#F59E0B] transition-all">
                     <div class="absolute top-0 left-0 w-full h-1.5 bg-[#F59E0B]"></div>
                     <i class="fas fa-exclamation-triangle absolute -bottom-6 -right-6 text-7xl sm:text-8xl text-amber-500/10 transform rotate-12 pointer-events-none group-hover:scale-110 transition-transform"></i>
-                    <div class="text-xs sm:text-sm font-bold text-amber-600 mb-1 z-10">オーバーステップ・パスミス等</div>
-                    <div class="text-6xl sm:text-7xl font-black text-gradient-amber stat-value z-10 leading-none my-2" id="dash-errors">0</div>
-                    <div class="text-sm sm:text-base font-black text-slate-700 z-10">チーム総ミス数</div>
+                    <div class="text-xs sm:text-sm font-bold text-amber-600 mb-1 z-10 text-center">パス・キャッチミス等</div>
+                    <div class="text-5xl sm:text-6xl font-black text-gradient-amber stat-value z-10 leading-none my-2" id="dash-errors">0</div>
+                    <div class="text-sm sm:text-base font-black text-slate-700 z-10">自チーム ミス</div>
+                </div>
+
+                <!-- 🆕 相手チームミス数 -->
+                <div class="col-span-1 lg:col-span-1 bg-gradient-to-br from-slate-50 to-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 flex flex-col justify-center items-center relative overflow-hidden group hover:border-slate-400 transition-all">
+                    <div class="absolute top-0 left-0 w-full h-1.5 bg-slate-400"></div>
+                    <i class="fas fa-hand-paper absolute -bottom-6 -right-6 text-7xl sm:text-8xl text-slate-500/10 transform rotate-12 pointer-events-none group-hover:scale-110 transition-transform"></i>
+                    <div class="text-xs sm:text-sm font-bold text-slate-500 mb-1 z-10 text-center">相手の反則誘発・パスカット</div>
+                    <div class="text-5xl sm:text-6xl font-black text-gradient-slate stat-value z-10 leading-none my-2" id="dash-opponent-errors">0</div>
+                    <div class="text-sm sm:text-base font-black text-slate-700 z-10">相手チーム ミス</div>
                 </div>
 
             </div>
 
-            <!-- 🆕 選手別スタッツ (追加) -->
+            <!-- 選手別スタッツ -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 relative overflow-hidden">
                 <h3 class="text-sm sm:text-base font-black text-slate-700 mb-4 flex items-center"><i class="fas fa-users text-[#0077B6] mr-2"></i>選手別スタッツ</h3>
                 <div class="overflow-x-auto pb-2">
@@ -183,7 +195,8 @@
                                 <th class="p-3 rounded-tl-lg">選手名</th>
                                 <th class="p-3 text-center">POS</th>
                                 <th class="p-3 text-right">シュート / 決定率</th>
-                                <th class="p-3 text-center">シュート内訳 (L/M/C/F/S)</th>
+                                <!-- 🆕 7mスローをヘッダーに追加 -->
+                                <th class="p-3 text-center">シュート内訳 (L/M/C/F/S/7m)</th>
                                 <th class="p-3 text-center">ミス</th>
                                 <th class="p-3 text-right rounded-tr-lg">セーブ / セーブ率</th>
                             </tr>
@@ -272,31 +285,45 @@
             if (index === "") return;
             const matchData = matches[index].data;
 
+            // 🆕 7mスローや相手ミスを含むように初期化
             let stats = {
-                goals: 0, miss: 0, errors: 0, saves: 0, allowed: 0,
+                goals: 0, miss: 0, errors: 0, saves: 0, allowed: 0, opponent_errors: 0,
                 types: {
-                    L: {g:0, m:0}, M: {g:0, m:0}, C: {g:0, m:0}, F: {g:0, m:0}, S: {g:0, m:0}
+                    L: {g:0, m:0}, M: {g:0, m:0}, C: {g:0, m:0}, F: {g:0, m:0}, S: {g:0, m:0}, '7m': {g:0, m:0}
                 }
             };
 
+            // データ集計
             matchData.forEach(p => {
                 if (p.position === 'CP') {
-                    ['L', 'M', 'C', 'F', 'S'].forEach(t => {
-                        stats.types[t].g += p[`${t}_goals`];
-                        stats.types[t].m += p[`${t}_miss`];
-                        stats.goals += p[`${t}_goals`];
-                        stats.miss += p[`${t}_miss`];
+                    ['L', 'M', 'C', 'F', 'S', '7m'].forEach(t => {
+                        const gKey = t === '7m' ? '7m_goals' : `${t}_goals`;
+                        const mKey = t === '7m' ? '7m_miss' : `${t}_miss`;
+                        const g = p[gKey] || 0;
+                        const m = p[mKey] || 0;
+                        stats.types[t].g += g;
+                        stats.types[t].m += m;
+                        stats.goals += g;
+                        stats.miss += m;
                     });
-                    stats.errors += p.errors;
+                    stats.errors += (p.errors || 0);
                 } else if (p.position === 'GK') {
-                    stats.saves += p.saves;
-                    stats.allowed += p.allowed;
+                    stats.saves += (p.saves || 0) + (p.saves_7m || 0);
+                    stats.allowed += (p.allowed || 0) + (p.allowed_7m || 0);
+                    stats.errors += (p.errors || 0); // GKのミスも自チームの総ミスに合算
+                }
+                
+                // 相手ミス (同じ試合で記録された最大値を取得)
+                if (p.opponent_errors) {
+                    stats.opponent_errors = Math.max(stats.opponent_errors, p.opponent_errors);
                 }
             });
 
+            // サマリー数値の反映
             document.getElementById('dash-goals').innerText = stats.goals;
             document.getElementById('dash-allowed').innerText = stats.allowed;
             document.getElementById('dash-errors').innerText = stats.errors;
+            document.getElementById('dash-opponent-errors').innerText = stats.opponent_errors;
 
             document.getElementById('bar-shot-rate').style.width = '0%';
             document.getElementById('bar-save-rate').style.width = '0%';
@@ -315,8 +342,9 @@
                 document.getElementById('bar-save-rate').style.width = `${saveRate}%`;
             }, 50);
 
-            const typeLabels = { L: 'ディスタンス', M: 'ミドル', C: 'カットイン', F: 'ノーマーク', S: 'サイド' };
-            document.getElementById('shot-types-container').innerHTML = ['L', 'M', 'C', 'F', 'S'].map(t => {
+            // 🆕 シュート種類別内訳 (7m追加版)
+            const typeLabels = { L: 'ディスタンス', M: 'ミドル', C: 'カットイン', F: 'ノーマーク', S: 'サイド', '7m': '7mスロー' };
+            document.getElementById('shot-types-container').innerHTML = ['L', 'M', 'C', 'F', 'S', '7m'].map(t => {
                 const g = stats.types[t].g;
                 const total = g + stats.types[t].m;
                 const rate = total > 0 ? (g / total) * 100 : 0;
@@ -329,48 +357,56 @@
                 }
 
                 return `
-                    <div class="bg-slate-50 rounded-xl p-3 sm:p-4 flex flex-col justify-center items-center border border-slate-100 hover:border-slate-300 transition-colors h-full relative overflow-hidden">
+                    <div class="bg-slate-50 rounded-xl p-2 sm:p-3 flex flex-col justify-center items-center border border-slate-100 hover:border-slate-300 transition-colors h-full relative overflow-hidden">
                         <div class="absolute top-0 left-0 w-full h-1 ${topBarColor}"></div>
-                        <div class="text-3xl sm:text-4xl font-black stat-value ${colorClass} mt-1 sm:mt-2 leading-none">${rate.toFixed(0)}<span class="text-xs sm:text-sm font-bold ml-0.5 text-slate-400">%</span></div>
-                        <div class="font-black text-slate-700 mt-2 sm:mt-3 text-sm sm:text-base">${t} <span class="font-bold text-[10px] sm:text-xs text-slate-500 ml-1 block sm:inline text-center">${typeLabels[t]}</span></div>
-                        <div class="mt-auto pt-2 sm:pt-3 w-full text-center border-t border-slate-200 border-dashed">
-                            <span class="text-xs sm:text-sm font-bold text-slate-600">${g} <span class="text-slate-300 font-normal mx-0.5">/</span> ${total}</span>
+                        <div class="text-2xl sm:text-3xl font-black stat-value ${colorClass} mt-1 sm:mt-2 leading-none">${rate.toFixed(0)}<span class="text-[10px] sm:text-xs font-bold ml-0.5 text-slate-400">%</span></div>
+                        <div class="font-black text-slate-700 mt-1 sm:mt-2 text-xs sm:text-sm">${t} <span class="font-bold text-[8px] sm:text-[10px] text-slate-500 ml-0.5 block xl:inline text-center">${typeLabels[t]}</span></div>
+                        <div class="mt-auto pt-1 sm:pt-2 w-full text-center border-t border-slate-200 border-dashed">
+                            <span class="text-[10px] sm:text-xs font-bold text-slate-600">${g} <span class="text-slate-300 font-normal mx-0.5">/</span> ${total}</span>
                         </div>
                     </div>
                 `;
             }).join('');
 
-            // --- 🆕 選手別スタッツのテーブル生成 (追加) ---
+            // 🆕 選手別スタッツのテーブル生成
             const playerRows = matchData.map(p => {
                 if (p.position === 'CP') {
-                    const goals = p.L_goals + p.M_goals + p.C_goals + p.F_goals + p.S_goals;
-                    const misses = p.L_miss + p.M_miss + p.C_miss + p.F_miss + p.S_miss;
+                    const l_g = p.L_goals||0, l_m = p.L_miss||0;
+                    const m_g = p.M_goals||0, m_m = p.M_miss||0;
+                    const c_g = p.C_goals||0, c_m = p.C_miss||0;
+                    const f_g = p.F_goals||0, f_m = p.F_miss||0;
+                    const s_g = p.S_goals||0, s_m = p.S_miss||0;
+                    const p7_g = p['7m_goals']||0, p7_m = p['7m_miss']||0;
+
+                    const goals = l_g + m_g + c_g + f_g + s_g + p7_g;
+                    const misses = l_m + m_m + c_m + f_m + s_m + p7_m;
                     const shots = goals + misses;
                     const rate = shots > 0 ? ((goals / shots) * 100).toFixed(1) : "0.0";
                     
                     const formatType = (t, g, m) => {
                         const tot = g + m;
-                        return `<span class="mx-1 sm:mx-1.5"><span class="text-slate-400 font-normal">${t}:</span><span class="text-slate-700 font-bold">${g}/${tot}</span></span>`;
+                        return `<span class="mx-0.5 sm:mx-1"><span class="text-slate-400 font-normal">${t}:</span><span class="text-slate-700 font-bold">${g}/${tot}</span></span>`;
                     };
-                    const detail = formatType('L', p.L_goals, p.L_miss) + 
-                                   formatType('M', p.M_goals, p.M_miss) + 
-                                   formatType('C', p.C_goals, p.C_miss) + 
-                                   formatType('F', p.F_goals, p.F_miss) + 
-                                   formatType('S', p.S_goals, p.S_miss);
+                    const detail = formatType('L', l_g, l_m) + 
+                                   formatType('M', m_g, m_m) + 
+                                   formatType('C', c_g, c_m) + 
+                                   formatType('F', f_g, f_m) + 
+                                   formatType('S', s_g, s_m) +
+                                   formatType('7m', p7_g, p7_m);
 
                     return `
                         <tr class="hover:bg-blue-50/50 transition-colors group">
                             <td class="p-3 font-bold text-slate-700 group-hover:text-[#0077B6]">${p.name}</td>
                             <td class="p-3 text-center"><span class="bg-blue-100 text-[#0077B6] px-2 py-0.5 rounded text-[10px] font-black tracking-wider">CP</span></td>
                             <td class="p-3 text-right stat-value"><span class="font-bold text-slate-600">${goals}/${shots}</span> <span class="text-[#0077B6] font-black ml-2 w-10 sm:w-12 inline-block text-right">${rate}%</span></td>
-                            <td class="p-3 text-center text-[10px] sm:text-xs tracking-tighter">${detail}</td>
+                            <td class="p-3 text-center text-[9px] sm:text-[11px] tracking-tighter">${detail}</td>
                             <td class="p-3 text-center stat-value font-black text-amber-500">${p.errors > 0 ? p.errors : '<span class="text-slate-300 font-normal">-</span>'}</td>
                             <td class="p-3 text-right text-slate-300 font-normal">-</td>
                         </tr>
                     `;
                 } else if (p.position === 'GK') {
-                    const saves = p.saves;
-                    const faced = p.saves + p.allowed;
+                    const saves = (p.saves||0) + (p.saves_7m||0);
+                    const faced = saves + (p.allowed||0) + (p.allowed_7m||0);
                     const rate = faced > 0 ? ((saves / faced) * 100).toFixed(1) : "0.0";
                     return `
                         <tr class="hover:bg-slate-100 transition-colors group">
@@ -378,7 +414,7 @@
                             <td class="p-3 text-center"><span class="bg-slate-200 text-[#0A2444] px-2 py-0.5 rounded text-[10px] font-black tracking-wider">GK</span></td>
                             <td class="p-3 text-right text-slate-300 font-normal">-</td>
                             <td class="p-3 text-center text-slate-300 font-normal">-</td>
-                            <td class="p-3 text-center text-slate-300 font-normal">-</td>
+                            <td class="p-3 text-center stat-value font-black text-amber-500">${p.errors > 0 ? p.errors : '<span class="text-slate-300 font-normal">-</span>'}</td>
                             <td class="p-3 text-right stat-value"><span class="font-bold text-slate-600">${saves}/${faced}</span> <span class="text-[#0A2444] font-black ml-2 w-10 sm:w-12 inline-block text-right">${rate}%</span></td>
                         </tr>
                     `;
