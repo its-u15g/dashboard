@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ITS U-15G | 試合分析ダッシュボード</title>
+    <title>ITS U-15G | プレミアム試合分析ダッシュボード</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -11,57 +11,85 @@
             --team-main: #0A2444;      /* ネイビー */
             --team-sub: #0077B6;       /* ブルー */
             --team-accent: #F59E0B;    /* イエローオレンジ */
-            --bg-color: #f1f5f9;       /* 背景色 */
+            --bg-color: #f8fafc;       /* 背景色 */
         }
-        body { font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif; background-color: var(--bg-color); color: #334155; }
-        .stat-value { font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
         
-        /* プログレスバーのアニメーション */
-        .bar-bg { background-color: #e2e8f0; border-radius: 999px; overflow: hidden; height: 10px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1); }
-        .bar-fill { height: 100%; border-radius: 999px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); }
+        body { 
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif; 
+            background-color: var(--bg-color); 
+            color: #334155; 
+            /* メッシュグラデーション風の背景 */
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(201,100%,94%,1) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, hsla(213,100%,95%,1) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
         
-        /* グラデーションテキスト */
-        .text-gradient-blue { background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-image: linear-gradient(135deg, var(--team-main), var(--team-sub)); }
-        .text-gradient-amber { background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-image: linear-gradient(135deg, #d97706, #fbbf24); }
-        .text-gradient-rose { background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-image: linear-gradient(135deg, #be123c, #fb7185); }
+        .stat-value { font-variant-numeric: tabular-nums; letter-spacing: -0.03em; }
+        
+        /* 🎨 プログレスバー（光彩エフェクト付き） */
+        .bar-bg { background-color: #f1f5f9; border-radius: 999px; overflow: hidden; height: 12px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+        .bar-fill { height: 100%; border-radius: 999px; transition: width 1.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .bar-glow-blue { box-shadow: 0 0 10px rgba(0, 119, 182, 0.5); }
+        .bar-glow-navy { box-shadow: 0 0 10px rgba(10, 36, 68, 0.5); }
+        .bar-glow-rose { box-shadow: 0 0 10px rgba(244, 63, 94, 0.5); }
+        
+        /* 🎨 グラデーションテキスト */
+        .text-gradient-blue { background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-image: linear-gradient(135deg, var(--team-sub), #0284c7); }
+        .text-gradient-navy { background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-image: linear-gradient(135deg, var(--team-main), #1e293b); }
+        .text-gradient-amber { background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-image: linear-gradient(135deg, #ea580c, #f59e0b); }
+        .text-gradient-rose { background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-image: linear-gradient(135deg, #e11d48, #fb7185); }
         .text-gradient-slate { background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-image: linear-gradient(135deg, #475569, #94a3b8); }
 
         /* セレクトボックスの矢印カスタマイズ */
         .select-wrapper { position: relative; }
         .select-wrapper::after {
             content: "\f078"; font-family: "Font Awesome 6 Free"; font-weight: 900;
-            position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-            color: rgba(255,255,255,0.6); pointer-events: none; font-size: 12px;
+            position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+            color: rgba(255,255,255,0.7); pointer-events: none; font-size: 12px;
         }
+
+        /* 💫 アニメーション */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
 
         /* 🖨️ 印刷用スタイル */
         @media print {
             @page { size: A4 landscape; margin: 10mm; }
-            body { background-color: #ffffff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            body { background-image: none !important; background-color: #ffffff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             header { background: #0A2444 !important; padding: 12px 20px !important; }
             .btn-sync, .select-wrapper::after { display: none !important; }
             select#match-selector { appearance: none !important; -webkit-appearance: none !important; border: none !important; background: transparent !important; color: white !important; font-size: 1.25rem !important; padding: 0 !important; }
-            .shadow-sm { box-shadow: none !important; border: 1px solid #cbd5e1 !important; }
+            .shadow-xl, .shadow-md, .shadow-sm { box-shadow: none !important; border: 1px solid #cbd5e1 !important; }
             table { page-break-inside: auto; }
             tr { page-break-inside: avoid; page-break-after: auto; }
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col selection:bg-[#0077B6] selection:text-white">
 
-    <!-- ヘッダー -->
-    <header class="bg-gradient-to-r from-[#0A2444] to-[#004e7a] text-white shadow-md z-50 h-[4rem] sm:h-[5rem] flex-shrink-0">
-        <div class="max-w-7xl mx-auto px-4 h-full flex justify-between items-center">
+    <!-- 🌟 ヘッダー (Glassmorphism) -->
+    <header class="sticky top-0 z-50 h-[3.5rem] sm:h-[4.5rem] lg:h-[5rem] flex-shrink-0 backdrop-blur-md bg-[#0A2444]/95 border-b border-white/10 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-full flex justify-between items-center">
             
-            <div class="flex items-center gap-4 sm:gap-6 w-full sm:w-auto">
+            <div class="flex items-center gap-4 sm:gap-8 w-full sm:w-auto">
                 <!-- ロゴ・タイトル -->
-                <h1 class="text-xl sm:text-2xl font-black tracking-widest leading-none drop-shadow-sm flex items-center flex-shrink-0">
-                    <i class="fas fa-chart-line mr-2 text-[#0077B6]"></i> ITS U-15G
+                <h1 class="text-lg sm:text-xl lg:text-2xl font-black tracking-widest text-white leading-none drop-shadow-md flex items-center flex-shrink-0">
+                    <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#0077B6] to-[#0284c7] flex items-center justify-center mr-2 sm:mr-3 shadow-inner">
+                        <i class="fas fa-chart-line text-white text-xs sm:text-sm"></i>
+                    </div>
+                    ITS U-15G
                 </h1>
                 
-                <!-- PC/タブレット用 試合セレクター -->
-                <div class="hidden sm:block select-wrapper bg-white/10 rounded-lg border border-white/20 px-3 py-1.5 focus-within:ring-2 focus-within:ring-[#0077B6] transition-all min-w-[280px] lg:min-w-[350px]">
-                    <div class="text-[10px] text-[#0077B6] font-bold tracking-wider mb-0.5">分析する試合を選択</div>
+                <!-- PC/タブレット横用 試合セレクター -->
+                <div class="hidden md:block select-wrapper bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 px-3 py-1.5 lg:px-4 lg:py-2 focus-within:ring-2 focus-within:ring-[#0077B6] focus-within:bg-white/10 transition-all min-w-[240px] lg:min-w-[350px]">
+                    <div class="text-[9px] text-[#38bdf8] font-black tracking-widest mb-0.5 uppercase">Select Match</div>
                     <select id="match-selector" onchange="renderDashboard()" class="w-full bg-transparent text-white font-bold outline-none cursor-pointer text-sm sm:text-base appearance-none pr-6">
                         <option value="" class="text-slate-800">データを読み込み中...</option>
                     </select>
@@ -69,134 +97,191 @@
             </div>
 
             <!-- 更新ボタン -->
-            <button onclick="fetchData()" class="btn-sync px-3 sm:px-4 py-2 bg-white/10 hover:bg-white/20 text-xs sm:text-sm font-bold rounded-lg flex items-center transition-all border border-white/10 backdrop-blur-sm flex-shrink-0">
-                <i class="fas fa-sync-alt mr-1.5" id="sync-icon"></i> <span class="hidden sm:inline">データ更新</span>
+            <button onclick="fetchData()" class="btn-sync px-3 py-2 sm:px-4 sm:py-2.5 bg-gradient-to-r from-[#0077B6] to-[#0284c7] hover:from-[#0284c7] hover:to-[#0369a1] text-white text-[10px] sm:text-xs lg:text-sm font-bold rounded-xl flex items-center transition-all shadow-md shadow-[#0077B6]/30 flex-shrink-0 transform active:scale-95">
+                <i class="fas fa-sync-alt mr-1.5 sm:mr-2" id="sync-icon"></i> <span class="hidden sm:inline">データを同期</span>
             </button>
         </div>
     </header>
 
-    <!-- スマホ用 試合セレクター -->
-    <div class="sm:hidden px-4 py-3 bg-white border-b border-slate-200 shadow-sm z-40 relative">
-        <div class="text-[10px] text-slate-500 font-bold mb-1">分析する試合を選択</div>
-        <select id="match-selector-mobile" onchange="syncSelectors(this)" class="w-full bg-slate-50 border border-slate-300 text-[#0A2444] text-sm font-bold rounded-lg p-2.5 outline-none">
-            <option value="">データを読み込み中...</option>
-        </select>
+    <!-- スマホ・タブレット縦用 試合セレクター -->
+    <div class="md:hidden px-4 py-2 sm:py-3 bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm z-40 relative">
+        <div class="text-[10px] text-slate-500 font-bold mb-1 uppercase tracking-wider">Select Match</div>
+        <div class="select-wrapper text-slate-800">
+            <select id="match-selector-mobile" onchange="syncSelectors(this)" class="w-full bg-slate-100/50 border border-slate-200 text-[#0A2444] text-xs sm:text-sm font-bold rounded-xl p-2 sm:p-3 outline-none focus:ring-2 focus:ring-[#0077B6] appearance-none">
+                <option value="">データを読み込み中...</option>
+            </select>
+        </div>
     </div>
 
-    <!-- メインダッシュボード -->
-    <main class="flex-grow w-full max-w-6xl mx-auto p-4 sm:p-5 relative flex flex-col">
+    <!-- 🌟 メインダッシュボード -->
+    <main class="flex-grow w-full max-w-7xl mx-auto p-3 sm:p-5 lg:p-8 relative flex flex-col">
         
         <!-- ローディングオーバーレイ -->
-        <div id="loading-overlay" class="absolute inset-0 bg-[#f1f5f9]/90 backdrop-blur-sm z-40 flex flex-col items-center justify-center rounded-2xl">
-            <i class="fas fa-circle-notch fa-spin text-5xl text-[#0077B6] mb-4"></i>
-            <p class="font-bold text-slate-600 tracking-wider animate-pulse">データを読み込み中...</p>
+        <div id="loading-overlay" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-40 flex flex-col items-center justify-center rounded-3xl">
+            <div class="relative">
+                <div class="w-12 h-12 sm:w-16 sm:h-16 border-4 border-slate-200 rounded-full"></div>
+                <div class="w-12 h-12 sm:w-16 sm:h-16 border-4 border-[#0077B6] rounded-full border-t-transparent animate-spin absolute top-0 left-0"></div>
+            </div>
+            <p class="font-bold text-sm sm:text-base text-slate-600 tracking-wider mt-4 animate-pulse">Syncing Data...</p>
         </div>
 
-        <div id="dashboard-content" class="hidden flex flex-col gap-4 sm:gap-6 animate-[fadeIn_0.5s_ease-out] pb-10">
+        <div id="dashboard-content" class="hidden flex flex-col gap-4 sm:gap-6 lg:gap-8 pb-10">
             
-            <!-- 🆕 上段：3項目メインサマリー（プログレスバー付き） -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-5">
+            <!-- 🆕 上段：3項目メインサマリー（Glass & Glow） -->
+            <!-- スマホ:1列 / タブレット縦・横・PC:3列 に適応 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
                 <!-- 1. チーム シュート成功率 -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5 flex flex-col justify-between relative overflow-hidden">
-                    <div class="flex justify-between items-end mb-3">
-                        <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-[#0077B6]"><i class="fas fa-bullseye text-base sm:text-lg"></i></div>
-                            <div class="text-xs sm:text-sm font-black text-slate-700">自チーム 決定率</div>
+                <div class="bg-white rounded-[1.5rem] lg:rounded-3xl shadow-lg lg:shadow-xl shadow-slate-200/50 border border-slate-100 p-5 sm:p-5 lg:p-8 flex flex-col justify-between relative overflow-hidden group animate-fade-in-up">
+                    <div class="absolute top-0 right-0 w-20 h-20 md:w-24 md:h-24 lg:w-32 lg:h-32 bg-blue-50 rounded-bl-full -mr-8 -mt-8 lg:-mr-12 lg:-mt-12 transition-transform group-hover:scale-110"></div>
+                    <div class="flex justify-between items-start mb-4 lg:mb-6 relative z-10">
+                        <div class="flex items-center gap-2 lg:gap-3">
+                            <div class="w-10 h-10 lg:w-12 lg:h-12 rounded-xl lg:rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center text-[#0077B6] shadow-sm"><i class="fas fa-bullseye text-lg lg:text-xl"></i></div>
+                            <div>
+                                <div class="text-[10px] lg:text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Team Offense</div>
+                                <div class="text-sm lg:text-base font-black text-slate-700">自チーム 決定率</div>
+                            </div>
                         </div>
-                        <div class="text-[10px] sm:text-xs font-bold text-slate-400">ゴール <span class="text-slate-600 text-sm sm:text-base" id="dash-shot-detail">0 / 0</span></div>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <div class="text-3xl sm:text-5xl font-black text-[#0077B6] stat-value leading-none"><span id="dash-shot-rate">0.0</span><span class="text-base sm:text-xl text-slate-400 ml-0.5">%</span></div>
-                        <div class="flex-grow bar-bg"><div class="bar-fill bg-gradient-to-r from-[#0A2444] to-[#0077B6]" id="bar-shot-rate" style="width: 0%;"></div></div>
+                    <div class="relative z-10">
+                        <div class="flex items-end gap-1.5 lg:gap-2 mb-2 lg:mb-3">
+                            <!-- mdの時（タブレット縦3列）は少し小さめに、それ以外は大きく -->
+                            <div class="text-4xl md:text-4xl lg:text-6xl font-black text-gradient-blue stat-value leading-none"><span id="dash-shot-rate">0.0</span></div>
+                            <div class="text-xl lg:text-2xl font-bold text-slate-300 mb-0.5 lg:mb-1">%</div>
+                        </div>
+                        <div class="flex justify-between text-[10px] lg:text-xs font-bold text-slate-400 mb-1.5 lg:mb-2">
+                            <span>Goals / Total Shots</span>
+                            <span class="text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded-md"><span id="dash-shot-detail">0 / 0</span></span>
+                        </div>
+                        <div class="bar-bg"><div class="bar-fill bg-gradient-to-r from-[#38bdf8] to-[#0284c7] bar-glow-blue" id="bar-shot-rate" style="width: 0%;"></div></div>
                     </div>
                 </div>
 
                 <!-- 2. GK セーブ率 -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5 flex flex-col justify-between relative overflow-hidden">
-                    <div class="flex justify-between items-end mb-3">
-                        <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-[#0A2444]"><i class="fas fa-hands text-base sm:text-lg"></i></div>
-                            <div class="text-xs sm:text-sm font-black text-slate-700">GK セーブ率</div>
+                <div class="bg-white rounded-[1.5rem] lg:rounded-3xl shadow-lg lg:shadow-xl shadow-slate-200/50 border border-slate-100 p-5 sm:p-5 lg:p-8 flex flex-col justify-between relative overflow-hidden group animate-fade-in-up delay-100">
+                    <div class="absolute top-0 right-0 w-20 h-20 md:w-24 md:h-24 lg:w-32 lg:h-32 bg-slate-50 rounded-bl-full -mr-8 -mt-8 lg:-mr-12 lg:-mt-12 transition-transform group-hover:scale-110"></div>
+                    <div class="flex justify-between items-start mb-4 lg:mb-6 relative z-10">
+                        <div class="flex items-center gap-2 lg:gap-3">
+                            <div class="w-10 h-10 lg:w-12 lg:h-12 rounded-xl lg:rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-[#0A2444] shadow-sm"><i class="fas fa-hands text-lg lg:text-xl"></i></div>
+                            <div>
+                                <div class="text-[10px] lg:text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Goalkeeper</div>
+                                <div class="text-sm lg:text-base font-black text-slate-700">GK セーブ率</div>
+                            </div>
                         </div>
-                        <div class="text-[10px] sm:text-xs font-bold text-slate-400">セーブ <span class="text-slate-600 text-sm sm:text-base" id="dash-save-detail">0 / 0</span></div>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <div class="text-3xl sm:text-5xl font-black text-[#0A2444] stat-value leading-none"><span id="dash-save-rate">0.0</span><span class="text-base sm:text-xl text-slate-400 ml-0.5">%</span></div>
-                        <div class="flex-grow bar-bg"><div class="bar-fill bg-gradient-to-r from-slate-500 to-[#0A2444]" id="bar-save-rate" style="width: 0%;"></div></div>
+                    <div class="relative z-10">
+                        <div class="flex items-end gap-1.5 lg:gap-2 mb-2 lg:mb-3">
+                            <div class="text-4xl md:text-4xl lg:text-6xl font-black text-gradient-navy stat-value leading-none"><span id="dash-save-rate">0.0</span></div>
+                            <div class="text-xl lg:text-2xl font-bold text-slate-300 mb-0.5 lg:mb-1">%</div>
+                        </div>
+                        <div class="flex justify-between text-[10px] lg:text-xs font-bold text-slate-400 mb-1.5 lg:mb-2">
+                            <span>Saves / Shots Faced</span>
+                            <span class="text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded-md"><span id="dash-save-detail">0 / 0</span></span>
+                        </div>
+                        <div class="bar-bg"><div class="bar-fill bg-gradient-to-r from-slate-400 to-[#0f172a] bar-glow-navy" id="bar-save-rate" style="width: 0%;"></div></div>
                     </div>
                 </div>
 
                 <!-- 3. 相手チーム シュート成功率 -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5 flex flex-col justify-between relative overflow-hidden">
-                    <div class="flex justify-between items-end mb-3">
-                        <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center text-rose-500"><i class="fas fa-crosshairs text-base sm:text-lg"></i></div>
-                            <div class="text-xs sm:text-sm font-black text-slate-700">相手 決定率</div>
+                <div class="bg-white rounded-[1.5rem] lg:rounded-3xl shadow-lg lg:shadow-xl shadow-slate-200/50 border border-slate-100 p-5 sm:p-5 lg:p-8 flex flex-col justify-between relative overflow-hidden group animate-fade-in-up delay-200">
+                    <div class="absolute top-0 right-0 w-20 h-20 md:w-24 md:h-24 lg:w-32 lg:h-32 bg-rose-50 rounded-bl-full -mr-8 -mt-8 lg:-mr-12 lg:-mt-12 transition-transform group-hover:scale-110"></div>
+                    <div class="flex justify-between items-start mb-4 lg:mb-6 relative z-10">
+                        <div class="flex items-center gap-2 lg:gap-3">
+                            <div class="w-10 h-10 lg:w-12 lg:h-12 rounded-xl lg:rounded-2xl bg-gradient-to-br from-rose-50 to-rose-100 flex items-center justify-center text-rose-500 shadow-sm"><i class="fas fa-crosshairs text-lg lg:text-xl"></i></div>
+                            <div>
+                                <div class="text-[10px] lg:text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Opponent</div>
+                                <div class="text-sm lg:text-base font-black text-slate-700">相手 決定率</div>
+                            </div>
                         </div>
-                        <div class="text-[10px] sm:text-xs font-bold text-slate-400">被ゴール <span class="text-slate-600 text-sm sm:text-base" id="dash-opponent-shot-detail">0 / 0</span></div>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <div class="text-3xl sm:text-5xl font-black text-rose-500 stat-value leading-none"><span id="dash-opponent-shot-rate">0.0</span><span class="text-base sm:text-xl text-slate-400 ml-0.5">%</span></div>
-                        <div class="flex-grow bar-bg"><div class="bar-fill bg-gradient-to-r from-rose-300 to-rose-500" id="bar-opponent-shot-rate" style="width: 0%;"></div></div>
+                    <div class="relative z-10">
+                        <div class="flex items-end gap-1.5 lg:gap-2 mb-2 lg:mb-3">
+                            <div class="text-4xl md:text-4xl lg:text-6xl font-black text-gradient-rose stat-value leading-none"><span id="dash-opponent-shot-rate">0.0</span></div>
+                            <div class="text-xl lg:text-2xl font-bold text-slate-300 mb-0.5 lg:mb-1">%</div>
+                        </div>
+                        <div class="flex justify-between text-[10px] lg:text-xs font-bold text-slate-400 mb-1.5 lg:mb-2">
+                            <span>Goals Allowed / Faced</span>
+                            <span class="text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded-md"><span id="dash-opponent-shot-detail">0 / 0</span></span>
+                        </div>
+                        <div class="bar-bg"><div class="bar-fill bg-gradient-to-r from-rose-400 to-[#be123c] bar-glow-rose" id="bar-opponent-shot-rate" style="width: 0%;"></div></div>
                     </div>
                 </div>
             </div>
 
-            <!-- 🆕 中段：4項目パネル -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-                <!-- 得点 -->
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-5 flex flex-col justify-center items-center">
-                    <div class="text-xs sm:text-sm font-bold text-slate-400 mb-1">自チーム得点</div>
-                    <div class="text-4xl sm:text-5xl font-black text-gradient-blue stat-value leading-none" id="dash-goals">0</div>
+            <!-- 🆕 中段：4項目ミニサマリーパネル -->
+            <!-- スマホ:2列 / タブレット〜PC:4列 -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 animate-fade-in-up delay-300">
+                <div class="bg-white rounded-2xl shadow-md lg:shadow-lg shadow-slate-200/40 border border-slate-100 p-4 lg:p-5 flex flex-col justify-center items-center relative overflow-hidden group">
+                    <div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-[#38bdf8] to-[#0284c7] transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
+                    <div class="text-[10px] lg:text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Goals For</div>
+                    <div class="text-3xl sm:text-4xl lg:text-5xl font-black text-gradient-blue stat-value leading-none" id="dash-goals">0</div>
+                    <div class="text-[10px] lg:text-xs font-bold text-slate-600 mt-1.5 lg:mt-2">自チーム得点</div>
                 </div>
-                <!-- 失点 -->
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-5 flex flex-col justify-center items-center">
-                    <div class="text-xs sm:text-sm font-bold text-slate-400 mb-1">相手得点 (失点)</div>
-                    <div class="text-4xl sm:text-5xl font-black text-gradient-rose stat-value leading-none" id="dash-allowed">0</div>
+                
+                <div class="bg-white rounded-2xl shadow-md lg:shadow-lg shadow-slate-200/40 border border-slate-100 p-4 lg:p-5 flex flex-col justify-center items-center relative overflow-hidden group">
+                    <div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-rose-400 to-[#be123c] transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
+                    <div class="text-[10px] lg:text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Goals Against</div>
+                    <div class="text-3xl sm:text-4xl lg:text-5xl font-black text-gradient-rose stat-value leading-none" id="dash-allowed">0</div>
+                    <div class="text-[10px] lg:text-xs font-bold text-slate-600 mt-1.5 lg:mt-2">相手得点 (失点)</div>
                 </div>
-                <!-- 自ミス -->
-                <div class="bg-gradient-to-br from-amber-50 to-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-5 flex flex-col justify-center items-center">
-                    <div class="text-xs sm:text-sm font-bold text-amber-600 mb-1">自チーム ミス</div>
-                    <div class="text-4xl sm:text-5xl font-black text-gradient-amber stat-value leading-none" id="dash-errors">0</div>
+                
+                <div class="bg-gradient-to-b from-white to-amber-50/30 rounded-2xl shadow-md lg:shadow-lg shadow-slate-200/40 border border-slate-100 p-4 lg:p-5 flex flex-col justify-center items-center relative overflow-hidden group">
+                    <div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-amber-600 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
+                    <div class="text-[10px] lg:text-xs font-bold text-amber-500 mb-1 uppercase tracking-wider">Team Errors</div>
+                    <div class="text-3xl sm:text-4xl lg:text-5xl font-black text-gradient-amber stat-value leading-none" id="dash-errors">0</div>
+                    <div class="text-[10px] lg:text-xs font-bold text-slate-600 mt-1.5 lg:mt-2">自チーム ミス</div>
                 </div>
-                <!-- 相手ミス -->
-                <div class="bg-gradient-to-br from-slate-50 to-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-5 flex flex-col justify-center items-center">
-                    <div class="text-xs sm:text-sm font-bold text-slate-500 mb-1">相手チーム ミス</div>
-                    <div class="text-4xl sm:text-5xl font-black text-gradient-slate stat-value leading-none" id="dash-opponent-errors">0</div>
+                
+                <div class="bg-gradient-to-b from-white to-slate-50 rounded-2xl shadow-md lg:shadow-lg shadow-slate-200/40 border border-slate-100 p-4 lg:p-5 flex flex-col justify-center items-center relative overflow-hidden group">
+                    <div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-slate-400 to-slate-600 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
+                    <div class="text-[10px] lg:text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Opp. Errors</div>
+                    <div class="text-3xl sm:text-4xl lg:text-5xl font-black text-gradient-slate stat-value leading-none" id="dash-opponent-errors">0</div>
+                    <div class="text-[10px] lg:text-xs font-bold text-slate-600 mt-1.5 lg:mt-2">相手チーム ミス</div>
                 </div>
             </div>
 
             <!-- 下段：シュート種類別 -->
-            <div class="flex flex-col gap-4 sm:gap-5 mt-2">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 animate-fade-in-up delay-300">
                 <!-- 自チームシュート -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5 relative overflow-hidden">
-                    <h3 class="text-sm sm:text-base font-black text-slate-700 mb-3 flex items-center"><i class="fas fa-bullseye text-[#0077B6] mr-2"></i>自チーム シュート種類別の決定率</h3>
-                    <div class="grid grid-cols-4 sm:grid-cols-7 gap-2 sm:gap-3" id="shot-types-container"></div>
+                <div class="bg-white rounded-[1.5rem] lg:rounded-3xl shadow-lg lg:shadow-xl shadow-slate-200/50 border border-slate-100 p-4 sm:p-6 lg:p-8 relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-4 lg:mb-6">
+                        <h3 class="text-sm sm:text-base lg:text-lg font-black text-slate-700 flex items-center">
+                            <span class="w-1.5 h-4 lg:w-2 lg:h-6 rounded-full bg-[#0077B6] mr-2 lg:mr-3"></span> 自チーム シュート内訳
+                        </h3>
+                    </div>
+                    <!-- 魔法のFlexbox: 画面幅に合わせてカードが自動で折り返して綺麗に並ぶ -->
+                    <div class="flex flex-wrap justify-start sm:justify-center gap-2 sm:gap-3" id="shot-types-container"></div>
                 </div>
 
                 <!-- 相手シュート(失点) -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5 relative overflow-hidden">
-                    <h3 class="text-sm sm:text-base font-black text-slate-700 mb-3 flex items-center"><i class="fas fa-shield-alt text-rose-500 mr-2"></i>相手チーム シュート種類別の決定率 (自チームの失点率)</h3>
-                    <div class="grid grid-cols-4 sm:grid-cols-7 gap-2 sm:gap-3" id="gk-shot-types-container"></div>
+                <div class="bg-white rounded-[1.5rem] lg:rounded-3xl shadow-lg lg:shadow-xl shadow-slate-200/50 border border-slate-100 p-4 sm:p-6 lg:p-8 relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-4 lg:mb-6">
+                        <h3 class="text-sm sm:text-base lg:text-lg font-black text-slate-700 flex items-center">
+                            <span class="w-1.5 h-4 lg:w-2 lg:h-6 rounded-full bg-rose-500 mr-2 lg:mr-3"></span> 相手チーム シュート内訳
+                        </h3>
+                    </div>
+                    <!-- 魔法のFlexbox -->
+                    <div class="flex flex-wrap justify-start sm:justify-center gap-2 sm:gap-3" id="gk-shot-types-container"></div>
                 </div>
             </div>
 
             <!-- 選手別スタッツ -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5 relative overflow-hidden mt-2">
-                <h3 class="text-sm sm:text-base font-black text-slate-700 mb-3 flex items-center"><i class="fas fa-users text-[#0A2444] mr-2"></i>選手別スタッツ</h3>
-                <div class="overflow-x-auto pb-2">
-                    <table class="w-full text-left border-collapse whitespace-nowrap min-w-[800px]">
+            <div class="bg-white rounded-[1.5rem] lg:rounded-3xl shadow-lg lg:shadow-xl shadow-slate-200/50 border border-slate-100 p-4 sm:p-6 lg:p-8 relative overflow-hidden animate-fade-in-up delay-300">
+                <h3 class="text-sm sm:text-base lg:text-lg font-black text-slate-700 mb-4 lg:mb-6 flex items-center">
+                    <span class="w-1.5 h-4 lg:w-2 lg:h-6 rounded-full bg-[#0A2444] mr-2 lg:mr-3"></span> 選手別 詳細スタッツ
+                </h3>
+                <div class="overflow-x-auto pb-4">
+                    <table class="w-full text-left border-collapse whitespace-nowrap min-w-[800px] lg:min-w-[900px]">
                         <thead>
-                            <tr class="bg-slate-50 text-slate-500 text-xs sm:text-sm font-bold border-b border-slate-200 uppercase tracking-wider">
-                                <th class="p-3 sm:p-4 rounded-tl-lg">選手名</th>
-                                <th class="p-3 sm:p-4 text-center">POS</th>
-                                <th class="p-3 sm:p-4 text-right">シュート / 決定率</th>
-                                <th class="p-3 sm:p-4 text-center">シュート内訳 (L/M/C/P/F/S/7m)</th>
-                                <th class="p-3 sm:p-4 text-center">ミス</th>
-                                <th class="p-3 sm:p-4 text-right rounded-tr-lg">セーブ / セーブ率</th>
+                            <tr class="bg-slate-50 text-slate-400 text-[10px] sm:text-xs font-bold border-b-2 border-slate-200 uppercase tracking-widest">
+                                <th class="p-3 sm:p-4 rounded-tl-xl">Player</th>
+                                <th class="p-2 sm:p-4 text-center">Pos</th>
+                                <th class="p-2 sm:p-4 text-right">Shots / Rate</th>
+                                <th class="p-2 sm:p-4 text-center">Breakdown (L/M/C/P/F/S/7m)</th>
+                                <th class="p-2 sm:p-4 text-center">Errors</th>
+                                <th class="p-3 sm:p-4 text-right rounded-tr-xl">Saves / Rate</th>
                             </tr>
                         </thead>
-                        <tbody id="player-stats-container" class="text-sm divide-y divide-slate-100">
+                        <tbody id="player-stats-container" class="text-xs sm:text-sm divide-y divide-slate-100/80">
                             <!-- JSで生成 -->
                         </tbody>
                     </table>
@@ -227,8 +312,13 @@
         async function fetchData() {
             const icon = document.getElementById('sync-icon');
             if(icon) icon.classList.add('fa-spin');
-            document.getElementById('loading-overlay').classList.remove('hidden');
-            document.getElementById('dashboard-content').classList.add('hidden');
+            
+            const overlay = document.getElementById('loading-overlay');
+            const content = document.getElementById('dashboard-content');
+            overlay.classList.remove('hidden');
+            content.classList.add('hidden');
+            // アニメーションのリセット
+            content.classList.remove('animate-fade-in-up');
             
             try {
                 const response = await fetch(GAS_URL);
@@ -239,7 +329,7 @@
                 console.error(error);
             } finally {
                 if(icon) icon.classList.remove('fa-spin');
-                document.getElementById('loading-overlay').classList.add('hidden');
+                overlay.classList.add('hidden');
             }
         }
 
@@ -266,7 +356,12 @@
             document.getElementById('match-selector-mobile').innerHTML = optionsHTML;
 
             if (matches.length > 0) {
-                document.getElementById('dashboard-content').classList.remove('hidden');
+                const content = document.getElementById('dashboard-content');
+                content.classList.remove('hidden');
+                // DOM更新後にアニメーションクラスを再付与
+                void content.offsetWidth; // リフローを強制
+                content.classList.add('animate-fade-in-up');
+                
                 setTimeout(renderDashboard, 50);
             }
         }
@@ -317,7 +412,6 @@
                         rowAllowed += a;
                     });
                     
-                    // 過去データ（種類別記録がない場合）への互換性対応
                     if (rowSaves === 0 && rowAllowed === 0) {
                         stats.saves += parseInt(p.saves) || 0;
                         stats.allowed += parseInt(p.allowed) || 0;
@@ -339,6 +433,7 @@
             document.getElementById('dash-errors').innerText = stats.errors;
             document.getElementById('dash-opponent-errors').innerText = stats.opponent_errors;
 
+            // プログレスバーのリセット（アニメーションのため）
             document.getElementById('bar-shot-rate').style.width = '0%';
             document.getElementById('bar-save-rate').style.width = '0%';
             document.getElementById('bar-opponent-shot-rate').style.width = '0%';
@@ -363,40 +458,69 @@
                 document.getElementById('dash-opponent-shot-rate').innerText = opponentShotRate.toFixed(1);
                 document.getElementById('dash-opponent-shot-detail').innerText = `${stats.allowed} / ${totalFaced}`;
                 document.getElementById('bar-opponent-shot-rate').style.width = `${opponentShotRate}%`;
-            }, 50);
+            }, 100);
 
-            // 自チーム シュート内訳の生成
+            // シュート内訳カードを生成する共通関数（魔法のFlexbox対応クラス付き）
+            const createTypeCard = (t, g, a, total, isGk) => {
+                const rate = total > 0 ? ((isGk ? a : g) / total) * 100 : 0;
+                
+                // カラーロジック
+                let colorClass = "text-slate-600"; 
+                let ringClass = "ring-1 ring-slate-200 border-transparent";
+                let bgClass = "bg-white";
+                let iconHtml = "";
+
+                if(total > 0) { 
+                    if(rate >= 60) { 
+                        colorClass = isGk ? "text-rose-600" : "text-[#0284c7]"; 
+                        ringClass = isGk ? "ring-2 ring-rose-200 shadow-rose-100" : "ring-2 ring-blue-200 shadow-blue-100";
+                        bgClass = isGk ? "bg-rose-50/30" : "bg-blue-50/30";
+                        iconHtml = `<i class="fas fa-fire absolute top-1.5 right-1.5 sm:top-2 sm:right-2 text-[10px] sm:text-xs opacity-20 ${colorClass}"></i>`;
+                    } 
+                    else if(rate < 30) { 
+                        colorClass = isGk ? "text-[#0284c7]" : "text-rose-600"; 
+                        ringClass = isGk ? "ring-2 ring-blue-100" : "ring-2 ring-rose-100";
+                    } 
+                }
+                
+                const highlightValue = isGk ? `<span class="text-rose-500">${a}</span>` : g;
+
+                return `
+                <div class="${bgClass} rounded-2xl p-2 sm:p-3 lg:p-4 flex flex-col justify-center items-center shadow-sm ${ringClass} relative overflow-hidden transition-all hover:-translate-y-1 hover:shadow-md flex-1 min-w-[75px] sm:min-w-[90px] max-w-[140px]">
+                    ${iconHtml}
+                    <div class="text-xl sm:text-2xl lg:text-3xl font-black stat-value ${colorClass} leading-none mt-0.5 sm:mt-1">
+                        ${rate.toFixed(0)}<span class="text-[9px] sm:text-[10px] font-bold ml-0.5 opacity-50">%</span>
+                    </div>
+                    <div class="font-bold text-slate-700 mt-1 sm:mt-2 text-[9px] sm:text-[10px] lg:text-xs tracking-wider uppercase whitespace-nowrap">
+                        ${t} <span class="font-normal text-[7px] sm:text-[8px] lg:text-[9px] text-slate-400 block text-center">${typeLabels[t]}</span>
+                    </div>
+                    <div class="mt-1.5 sm:mt-2 pt-1 sm:pt-2 w-full text-center border-t border-slate-200/60">
+                        <span class="text-[9px] sm:text-[10px] lg:text-xs font-bold text-slate-600">${highlightValue} <span class="text-slate-300 font-normal mx-0.5">/</span> ${total}</span>
+                    </div>
+                </div>`;
+            };
+
+            // 自チーム シュート内訳
             document.getElementById('shot-types-container').innerHTML = shotTypesArray.map(t => {
                 const g = stats.types[t].g; 
                 const total = g + stats.types[t].m; 
-                const rate = total > 0 ? (g / total) * 100 : 0;
-                let colorClass = "text-slate-700"; let topBarColor = "bg-slate-200";
-                
-                if(total > 0) { 
-                    if(rate >= 60) { colorClass = "text-[#0077B6]"; topBarColor = "bg-[#0077B6]"; } 
-                    else if(rate < 30) { colorClass = "text-rose-500"; topBarColor = "bg-rose-500"; } 
-                }
-                
-                return `<div class="bg-slate-50 rounded-xl p-2 sm:p-3 flex flex-col justify-center items-center border border-slate-100 relative overflow-hidden"><div class="absolute top-0 left-0 w-full h-1 ${topBarColor}"></div><div class="text-2xl sm:text-3xl font-black stat-value ${colorClass} mt-1 leading-none">${rate.toFixed(0)}<span class="text-[10px] sm:text-xs font-bold ml-0.5 text-slate-400">%</span></div><div class="font-black text-slate-700 mt-1 text-[10px] sm:text-xs whitespace-nowrap">${t} <span class="font-bold text-[8px] sm:text-[9px] text-slate-500 block text-center">${typeLabels[t]}</span></div><div class="mt-auto pt-1 sm:pt-2 w-full text-center border-t border-slate-200 border-dashed"><span class="text-[10px] sm:text-xs font-bold text-slate-600">${g} <span class="text-slate-300 font-normal mx-0.5">/</span> ${total}</span></div></div>`;
+                return createTypeCard(t, g, 0, total, false);
             }).join('');
 
-            // 相手チーム シュート内訳(失点)の生成
+            // 相手チーム シュート内訳(失点)
             document.getElementById('gk-shot-types-container').innerHTML = shotTypesArray.map(t => {
                 const a = stats.gkTypes[t].a; 
                 const total = stats.gkTypes[t].s + a; 
-                const rate = total > 0 ? (a / total) * 100 : 0;
-                let colorClass = "text-slate-700"; let topBarColor = "bg-slate-200";
-                
-                if(total > 0) { 
-                    if(rate >= 60) { colorClass = "text-rose-500"; topBarColor = "bg-rose-500"; } 
-                    else if(rate < 30) { colorClass = "text-[#0077B6]"; topBarColor = "bg-[#0077B6]"; } 
-                }
-                
-                return `<div class="bg-slate-50 rounded-xl p-2 sm:p-3 flex flex-col justify-center items-center border border-slate-100 relative overflow-hidden"><div class="absolute top-0 left-0 w-full h-1 ${topBarColor}"></div><div class="text-2xl sm:text-3xl font-black stat-value ${colorClass} mt-1 leading-none">${rate.toFixed(0)}<span class="text-[10px] sm:text-xs font-bold ml-0.5 text-slate-400">%</span></div><div class="font-black text-slate-700 mt-1 text-[10px] sm:text-xs whitespace-nowrap">${t} <span class="font-bold text-[8px] sm:text-[9px] text-slate-500 block text-center">${typeLabels[t]}</span></div><div class="mt-auto pt-1 sm:pt-2 w-full text-center border-t border-slate-200 border-dashed"><span class="text-[10px] sm:text-xs font-bold text-slate-600"><span class="text-rose-500">${a}</span> <span class="text-slate-300 font-normal mx-0.5">/</span> ${total}</span></div></div>`;
+                return createTypeCard(t, 0, a, total, true);
             }).join('');
 
             // 選手別スタッツ表の生成
-            const formatType = (t, g, m) => `<span class="mx-0.5 sm:mx-1"><span class="text-slate-400 font-normal">${t}:</span><span class="text-slate-700 font-bold">${g}/${g+m}</span></span>`;
+            const formatType = (t, g, m) => {
+                const tot = g + m;
+                // 色付け（シュートを打っていれば濃く、0なら薄く）
+                const opacityClass = tot > 0 ? 'opacity-100' : 'opacity-30';
+                return `<span class="mx-0.5 ${opacityClass} inline-block bg-slate-50 px-1 rounded border border-slate-100"><span class="text-slate-400 font-normal text-[9px] sm:text-[10px]">${t}:</span><span class="text-slate-700 font-bold ml-0.5">${g}/${tot}</span></span>`;
+            };
 
             const playerRows = matchData.map(p => {
                 if (p.position === 'CP') {
@@ -412,15 +536,19 @@
                     
                     const shots = goals + misses;
                     const rate = shots > 0 ? ((goals / shots) * 100).toFixed(1) : "0.0";
+                    const rateColor = shots > 0 && (goals/shots) >= 0.6 ? "text-[#0284c7]" : "text-slate-500";
                     
                     return `
-                        <tr class="hover:bg-blue-50/50 transition-colors group">
-                            <td class="p-3 sm:p-4 font-bold text-slate-700 group-hover:text-[#0077B6]">${p.name}</td>
-                            <td class="p-3 sm:p-4 text-center"><span class="bg-blue-100 text-[#0077B6] px-2 py-0.5 rounded text-[10px] font-black tracking-wider">CP</span></td>
-                            <td class="p-3 sm:p-4 text-right stat-value"><span class="font-bold text-slate-600">${goals}/${shots}</span> <span class="text-[#0077B6] font-black ml-2 w-10 sm:w-12 inline-block text-right">${rate}%</span></td>
-                            <td class="p-3 sm:p-4 text-center text-xs tracking-tighter">${detail}</td>
-                            <td class="p-3 sm:p-4 text-center stat-value font-black text-amber-500">${p.errors > 0 ? p.errors : '<span class="text-slate-300 font-normal">-</span>'}</td>
-                            <td class="p-3 sm:p-4 text-right text-slate-300 font-normal">-</td>
+                        <tr class="hover:bg-blue-50/30 transition-colors group">
+                            <td class="p-2 sm:p-4 font-bold text-slate-700 group-hover:text-[#0077B6]">${p.name}</td>
+                            <td class="p-2 sm:p-4 text-center"><span class="bg-blue-100 text-[#0077B6] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[9px] sm:text-[10px] font-black tracking-wider">CP</span></td>
+                            <td class="p-2 sm:p-4 text-right stat-value">
+                                <span class="font-bold text-slate-600 bg-slate-100 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md">${goals} / ${shots}</span> 
+                                <span class="${rateColor} font-black ml-2 sm:ml-3 w-8 sm:w-12 inline-block text-right">${rate}%</span>
+                            </td>
+                            <td class="p-2 sm:p-4 text-center text-[10px] sm:text-[11px] tracking-tighter whitespace-nowrap">${detail}</td>
+                            <td class="p-2 sm:p-4 text-center stat-value font-black text-amber-500">${p.errors > 0 ? p.errors : '<span class="text-slate-200 font-normal">-</span>'}</td>
+                            <td class="p-2 sm:p-4 text-right text-slate-200 font-normal">-</td>
                         </tr>
                     `;
                 } else if (p.position === 'GK') {
@@ -437,24 +565,27 @@
                         detail += formatType(t, s, a); 
                     });
 
-                    // 過去データのフォールバック
                     if (!hasDetail) {
                         saves = parseInt(p.saves) || 0;
                         allowed = parseInt(p.allowed) || 0;
-                        detail = '<span class="text-slate-400">詳細データなし</span>';
+                        detail = '<span class="text-slate-300 text-[10px] sm:text-xs italic">詳細データなし</span>';
                     }
 
                     const faced = saves + allowed;
                     const rate = faced > 0 ? ((saves / faced) * 100).toFixed(1) : "0.0";
+                    const rateColor = faced > 0 && (saves/faced) >= 0.4 ? "text-[#0A2444]" : "text-slate-500";
                     
                     return `
-                        <tr class="hover:bg-slate-100 transition-colors group">
-                            <td class="p-3 sm:p-4 font-bold text-slate-700 group-hover:text-[#0A2444]">${p.name}</td>
-                            <td class="p-3 sm:p-4 text-center"><span class="bg-slate-200 text-[#0A2444] px-2 py-0.5 rounded text-[10px] font-black tracking-wider">GK</span></td>
-                            <td class="p-3 sm:p-4 text-right text-slate-300 font-normal">-</td>
-                            <td class="p-3 sm:p-4 text-center text-xs tracking-tighter">${detail}</td>
-                            <td class="p-3 sm:p-4 text-center stat-value font-black text-amber-500">${p.errors > 0 ? p.errors : '<span class="text-slate-300 font-normal">-</span>'}</td>
-                            <td class="p-3 sm:p-4 text-right stat-value"><span class="font-bold text-slate-600">${saves}/${faced}</span> <span class="text-[#0A2444] font-black ml-2 w-10 sm:w-12 inline-block text-right">${rate}%</span></td>
+                        <tr class="hover:bg-slate-100/50 transition-colors group">
+                            <td class="p-2 sm:p-4 font-bold text-slate-700 group-hover:text-[#0A2444]">${p.name}</td>
+                            <td class="p-2 sm:p-4 text-center"><span class="bg-slate-200 text-[#0A2444] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[9px] sm:text-[10px] font-black tracking-wider">GK</span></td>
+                            <td class="p-2 sm:p-4 text-right text-slate-200 font-normal">-</td>
+                            <td class="p-2 sm:p-4 text-center text-[10px] sm:text-[11px] tracking-tighter whitespace-nowrap">${detail}</td>
+                            <td class="p-2 sm:p-4 text-center stat-value font-black text-amber-500">${p.errors > 0 ? p.errors : '<span class="text-slate-200 font-normal">-</span>'}</td>
+                            <td class="p-2 sm:p-4 text-right stat-value">
+                                <span class="font-bold text-slate-600 bg-slate-100 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md">${saves} / ${faced}</span> 
+                                <span class="${rateColor} font-black ml-2 sm:ml-3 w-8 sm:w-12 inline-block text-right">${rate}%</span>
+                            </td>
                         </tr>
                     `;
                 }
